@@ -29,7 +29,7 @@
 </script>
 
 <template>
-    <h1>瑞安市人民医院病区备用药物清点表</h1>
+    <h1></h1>
     <YudaoTable :columns="columns" :data="data">
         <template #sl="{row}">
             <el-input v-model="row.sl" />

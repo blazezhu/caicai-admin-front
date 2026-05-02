@@ -126,8 +126,7 @@ import axios from 'axios'
     overflow: hidden;
     padding-bottom: 3%;
     padding-left: 3%;
-    padding-right: 3%;
-    /* background-image: url('/images/瑞安市人民医院.png'); */
+    padding-right: 3%;  
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
