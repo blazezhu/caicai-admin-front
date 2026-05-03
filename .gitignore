@@ -10,3 +10,4 @@ auto-*.d.ts
 .env
 .env.local
 .env.prod
+.env.dev
