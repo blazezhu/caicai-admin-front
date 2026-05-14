@@ -55,7 +55,9 @@ const whiteList = [
   '/register',
   '/bfxjjl',
   '/oauthLogin/gitee',
-  '/messageSelect'
+  '/messageSelect',
+  '/kids/dashboard/access',
+  '/kids/dashboard/view'
 ]
 
 // 路由加载前

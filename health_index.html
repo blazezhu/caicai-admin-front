@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>温州健康指数预报</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #e8f0fe 0%, #f5e6d0 100%);
+    min-height: 100vh;
+    padding: 30px 20px;
+}
+.wrap { max-width:1100px; margin:0 auto; }
+.card {
+    background:#fff;
+    border-radius:16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    overflow:hidden;
+}
+.header {
+    background: linear-gradient(135deg, #2c7be5 0%, #6cb4f5 100%);
+    color:#fff;
+    padding:24px 32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.header h1 { font-size:22px; font-weight:600; }
+.header .sub { font-size:13px; opacity:.8; margin-top:3px; }
+.header .right { text-align:right; }
+.header .right .time { font-size:18px; font-weight:600; }
+.header .right .status { font-size:12px; opacity:.7; margin-top:2px; }
+
+.status-dot {
+    display:inline-block;
+    width:8px; height:8px;
+    border-radius:50%;
+    margin-right:4px;
+    vertical-align:middle;
+    animation: pulse 2s infinite;
+}
+.status-dot.on { background:#52c41d; }
+.status-dot.off { background:#ff4d4f; animation:none; }
+@keyframes pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:.4; }
+}
+
+table { width:100%; border-collapse:collapse; }
+thead th {
+    background:#f0f4f8;
+    padding:14px 12px;
+    font-size:12px;
+    font-weight:600;
+    color:#5a6a7a;
+    text-align:center;
+    border-bottom:2px solid #e2e8f0;
+    position:sticky; top:0;
+    white-space:nowrap;
+}
+thead th:first-child { text-align:left; padding-left:20px; min-width:150px; }
+thead th .sub { font-size:11px; color:#9aa5b0; display:block; margin-top:2px; }
+tbody td {
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #f1f5f9;
+    font-size:14px;
+    transition:background .2s;
+}
+tbody tr:hover td { background:#f8fbff; }
+tbody td:first-child { text-align:left; padding-left:20px; font-weight:500; color:#2d3748; white-space:nowrap; }
+thead th:first-child, tbody td:first-child { border-right:2px solid #e2e8f0; }
+
+.idx-icon {
+    display:inline-block;
+    width:26px; height:26px;
+    line-height:26px;
+    text-align:center;
+    border-radius:6px;
+    margin-right:8px;
+    font-size:13px;
+    vertical-align:middle;
+}
+.idx-name { vertical-align:middle; }
+.icon-blue   { background:#e8f4fd; }
+.icon-green  { background:#e6f9ee; }
+.icon-orange { background:#fff5e6; }
+.icon-red    { background:#fff1f0; }
+.icon-purple {{ background:#f3e8fd; }}
+.icon-teal   { background:#e0f7f7; }
+
+/* 等级标签 */
+.tag-level-1 { background:#e6f9ee; color:#1a9c52; border:1px solid #b8e6cc; padding:3px 12px; border-radius:20px; font-size:13px; font-weight:500; display:inline-block; }
+.tag-level-2 { background:#e8f4fd; color:#2b7de9; border:1px solid #b0d4f1; padding:3px 12px; border-radius:20px; font-size:13px; font-weight:500; display:inline-block; }
+.tag-level-3 { background:#fff5e6; color:#d48806; border:1px solid #ffe599; padding:3px 12px; border-radius:20px; font-size:13px; font-weight:500; display:inline-block; }
+.tag-level-4 { background:#fff0eb; color:#d4380d; border:1px solid #ffccc7; padding:3px 12px; border-radius:20px; font-size:13px; font-weight:500; display:inline-block; }
+.tag-level-5 { background:#fff1f0; color:#cf1322; border:1px solid #ffa39e; padding:3px 12px; border-radius:20px; font-size:13px; font-weight:500; display:inline-block; }
+.empty { color:#d0d7de; }
+
+.legend {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:20px;
+    padding:16px;
+    background:#fafbfc;
+    border-top:1px solid #f0f0f0;
+    font-size:12px;
+    color:#8c9aab;
+    flex-wrap:wrap;
+}
+.legend-item { display:flex; align-items:center; gap:5px; }
+.legend-dot { width:10px; height:10px; border-radius:50%; }
+.legend-dot.green  { background:#1a9c52; }
+.legend-dot.blue   { background:#2b7de9; }
+.legend-dot.orange { background:#d48806; }
+.legend-dot.coral  { background:#d4380d; }
+.legend-dot.red    { background:#cf1322; }
+
+.footer { text-align:center; padding:14px; font-size:12px; color:#b0bec5; }
+
+.refresh-bar {
+    text-align:center;
+    padding:8px;
+    font-size:12px;
+    color:#9aa5b0;
+    border-top:1px solid #f0f0f0;
+}
+.error-msg {
+    text-align:center;
+    padding:20px;
+    color:#cf1322;
+    background:#fff1f0;
+    font-size:13px;
+    display:none;
+}
+
+/* Loading */
+.loading td { text-align:center; padding:40px; color:#9aa5b0; font-size:14px; }
+.loading td::after { content:'加载中...'; }
+
+@media (max-width:700px) {
+    body { padding:8px; }
+    .header { padding:16px 18px; flex-direction:column; gap:8px; }
+    .header h1 { font-size:18px; }
+    thead th:first-child, tbody td:first-child { min-width:90px; padding-left:10px; }
+    tbody td { padding:8px 4px; font-size:12px; }
+    thead th { padding:10px 4px; font-size:11px; }
+    .idx-icon { width:22px; height:22px; line-height:22px; font-size:11px; margin-right:4px; }
+    .legend { gap:12px; }
+    .legend-item { font-size:11px; }
+    .tag-level-1,.tag-level-2,.tag-level-3,.tag-level-4,.tag-level-5 { padding:2px 8px; font-size:12px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <div class="header">
+            <div>
+                <h1>🌤 温州健康指数预报</h1>
+                <div class="sub">Health Index Forecast · 自动刷新</div>
+            </div>
+            <div class="right">
+                <div class="time" id="updateTime">--:--:--</div>
+                <div class="status">
+                    <span class="status-dot on" id="statusDot"></span>
+                    <span id="statusText">加载中...</span>
+                </div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>指数名称</th>
+                    <th colspan="7" id="dateHeader" style="font-weight:400;color:#5a6a7a;">等待数据...</th>
+                </tr>
+            </thead>
+            <tbody id="tbody">
+                <tr class="loading"><td colspan="8"></td></tr>
+            </tbody>
+        </table>
+
+        <div class="legend">
+            <span style="font-weight:600;">等级图例：</span>
+            <div class="legend-item"><div class="legend-dot green"></div> 低/不易</div>
+            <div class="legend-item"><div class="legend-dot blue"></div> 轻微</div>
+            <div class="legend-item"><div class="legend-dot orange"></div> 中等</div>
+            <div class="legend-item"><div class="legend-dot coral"></div> 较高</div>
+            <div class="legend-item"><div class="legend-dot red"></div> 高</div>
+        </div>
+        <div class="refresh-bar">每 5 分钟自动刷新 · 上次更新: <span id="lastRefresh">--</span></div>
+        <div class="error-msg" id="errorMsg">⚠️ 数据加载失败，请检查网络连接</div>
+        <div class="footer">数据来源：温州气象 · 数据仅供健康参考</div>
+    </div>
+</div>
+
+<script>
+// ========== 配置 ==========
+const API_URL = 'http://pro-api-vpc.zj121.com/wenzhou/health_index_data?appCode=7a03c885597e47f5bd29003ad27de703';
+const REFRESH_INTERVAL = 5 * 60 * 1000; // 5分钟
+
+// 指数 → emoji 映射
+const ICONS = {
+    '感冒指数':'🤧','慢性阻塞性肺指数':'🫁','中暑指数':'☀️',
+    '儿童哮喘风险':'👶','心脑血管疾病发病指数':'❤️',
+    '紫外线指数':'🌞','过敏指数':'🤒','运动指数':'🏃',
+    '着装指数':'👔','舒适度指数':'😌','空气污染指数':'🌫️',
+    '台风指数':'🌀','防晒指数':'🌞','洗车指数':'🚗',
+    '晨练指数':'🏃','花粉指数':'🌸','蜘蛛指数':'🕷️',
+    '钓鱼指数':'🎣','旅游指数':'✈️','紫外线':'🌞',
+    '花粉':'🌸'
+};
+
+// 指数 → icon 颜色
+const COLORS = {
+    '感冒指数':'blue','慢性阻塞性肺指数':'teal','中暑指数':'orange',
+    '儿童哮喘风险':'red','心脑血管疾病发病指数':'red',
+    '紫外线指数':'orange','过敏指数':'blue','运动指数':'green',
+    '着装指数':'purple','舒适度指数':'green','空气污染指数':'red',
+    '台风指数':'blue','防晒指数':'orange','洗车指数':'teal',
+    '晨练指数':'green','花粉指数':'orange','蜘蛛指数':'purple',
+    '钓鱼指数':'teal','旅游指数':'green','紫外线':'orange',
+    '花粉':'orange'
+};
+
+const WDS = ['日','一','二','三','四','五','六'];
+
+// 每秒更新右上角时钟
+function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('updateTime').textContent = h + ':' + m + ':' + s;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ========== 渲染数据 ==========
+function render(data) {
+    // 收集所有日期
+    const allDates = [];
+    const seen = new Set();
+    for (const item of data) {
+        for (const day of item.list) {
+            if (!seen.has(day.date)) {
+                seen.add(day.date);
+                allDates.push(day.date);
+            }
+        }
+    }
+
+    // 表头
+    const headerRow = document.querySelector('thead tr');
+    headerRow.innerHTML = '<th>指数名称</th>';
+    for (const d of allDates) {
+        const dt = new Date(d);
+        const html = d + '<span class="sub">' + (dt.getMonth()+1) + '/' + dt.getDate() + ' 周' + WDS[dt.getDay()] + '</span>';
+        headerRow.innerHTML += '<th>' + html + '</th>';
+    }
+
+    // tbody
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+    for (const item of data) {
+        const name = item.index_name;
+        const icon = ICONS[name] || '📊';
+        const color = COLORS[name] || 'blue';
+
+        const dm = {};
+        for (const day of item.list) {
+            dm[day.date] = [day.info.note, day.level];
+        }
+
+        let cells = '<td><span class="idx-icon icon-' + color + '">' + icon + '</span><span class="idx-name">' + name + '</span></td>';
+        for (const d of allDates) {
+            const entry = dm[d];
+            if (entry) {
+                cells += '<td><span class="tag-level-' + entry[1] + '">' + entry[0] + '</span></td>';
+            } else {
+                cells += '<td class="empty">—</td>';
+            }
+        }
+        tbody.innerHTML += '<tr>' + cells + '</tr>';
+    }
+
+    // 更新数据刷新时间
+    const now = new Date();
+    document.getElementById('lastRefresh').textContent =
+        String(now.getHours()).padStart(2,'0') + ':' +
+        String(now.getMinutes()).padStart(2,'0') + ':' +
+        String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('statusText').textContent = '已更新';
+    document.getElementById('errorMsg').style.display = 'none';
+    document.getElementById('statusDot').className = 'status-dot on';
+}
+
+function fetchData() {
+    document.getElementById('statusText').textContent = '加载中...';
+    document.getElementById('statusDot').className = 'status-dot';
+    fetch(API_URL)
+        .then(r => r.json())
+        .then(data => render(data))
+        .catch(err => {
+            console.error(err);
+            document.getElementById('statusText').textContent = '加载失败';
+            document.getElementById('statusDot').className = 'status-dot off';
+            document.getElementById('errorMsg').style.display = 'block';
+        });
+}
+
+// 首次加载 + 定时刷新
+fetchData();
+setInterval(fetchData, REFRESH_INTERVAL);
+</script>
+</body>
+</html>

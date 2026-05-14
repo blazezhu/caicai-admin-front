@@ -112,5 +112,33 @@ export default[
         title: '短信查询',
         roles: ['*']
     }
+},
+// ========== 儿童大屏相关路由 ==========
+{
+    path: '/kids/dashboard/access',
+    name: 'KidsDashboardAccess',
+    component: () => import('@/views/kids/dashboard/AccessPage.vue'),
+    meta: {
+        title: '儿童大屏 - 生成访问码',
+        roles: ['*']
+    }
+},
+{
+    path: '/kids/dashboard/view',
+    name: 'KidsDashboardView',
+    component: () => import('@/views/kids/dashboard/DashboardView.vue'),
+    meta: {
+        title: '我的大屏',
+        roles: ['*']
+    }
+},
+{
+    path: '/kids/dashboard/user',
+    name: 'KidsUserDashboard',
+    component: () => import('@/views/kids/dashboard/UserDashboardPage.vue'),
+    meta: {
+        title: '用户大屏',
+        roles: ['*']
+    }
 }
 ]

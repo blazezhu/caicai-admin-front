@@ -1,4 +1,5 @@
 import request from '@/config/axios'
+import requestApp from '@/config/axios/appService'
 
 export interface AccountBookVO {
   id: number
@@ -25,6 +26,13 @@ export interface AccountBookPageParam {
 // 分页查询账本列表
 export const getAccountBookPage = async (params: AccountBookPageParam) => {
   return await request.get({ url: '/kids/book/page', params })
+}
+
+// 根据用户ID获取账本列表（免登录）
+export const getAccountBookListByUserId = async (userId: number) => {
+  const res = await requestApp.get<any>({ url: '/app-api/kids/book/list-by-user', params: { userId } })
+  // res 已经是后端返回的 data 字段（账本列表数组），不需要再访问 .data
+  return Array.isArray(res) ? res : (res?.data || [])
 }
 
 // 获取账本详情
