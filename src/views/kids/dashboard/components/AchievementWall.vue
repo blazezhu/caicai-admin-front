@@ -7,7 +7,7 @@
     </div>
     <div class="achievement-grid">
       <div
-        v-for="achievement in achievements"
+        v-for="achievement in achievements.slice(0, 8)"
         :key="achievement.code"
         class="achievement-item"
         :class="{ unlocked: achievement.unlocked, locked: !achievement.unlocked }"
@@ -47,28 +47,31 @@ const unlockedCount = computed(() => {
 .achievement-wall {
   background: #fff;
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .section-title {
-  margin: 0 0 8px;
-  font-size: 16px;
+  margin: 0 0 6px;
+  font-size: 14px;
   font-weight: 600;
   color: #303133;
 }
 
 .achievement-stats {
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 
   .unlocked-count {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     color: #f56c6c;
   }
 
   .total-count {
-    font-size: 14px;
+    font-size: 12px;
     color: #909399;
   }
 }
@@ -76,11 +79,8 @@ const unlockedCount = computed(() => {
 .achievement-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  gap: 8px;
+  flex: 1;
 }
 
 .achievement-item {
@@ -88,19 +88,19 @@ const unlockedCount = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 8px;
-  border-radius: 12px;
+  padding: 8px 4px;
+  border-radius: 10px;
   background: #f5f7fa;
   transition: all 0.3s;
   cursor: pointer;
 
   &.unlocked {
     background: linear-gradient(135deg, #fef0f0 0%, #fdf6ec 100%);
-    border: 2px solid #f56c6c;
+    border: 1px solid #f56c6c;
 
     &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(245, 108, 108, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(245, 108, 108, 0.3);
     }
   }
 
@@ -111,22 +111,26 @@ const unlockedCount = computed(() => {
 }
 
 .achievement-icon {
-  font-size: 28px;
-  margin-bottom: 4px;
+  font-size: 22px;
+  margin-bottom: 2px;
 }
 
 .achievement-name {
-  font-size: 11px;
+  font-size: 10px;
   color: #606266;
   text-align: center;
   line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .achievement-lock {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  font-size: 12px;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
   color: #c0c4cc;
 }
 </style>

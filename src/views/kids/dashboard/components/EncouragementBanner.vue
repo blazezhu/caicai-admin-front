@@ -27,51 +27,31 @@ withDefaults(
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 16px 24px;
+  gap: 10px;
+  padding: 12px 20px;
   border-radius: 50px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
 
   &.complete {
     background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
-    box-shadow: 0 4px 20px rgba(103, 194, 58, 0.4);
+    box-shadow: 0 4px 16px rgba(103, 194, 58, 0.4);
   }
 
   &.streak {
     background: linear-gradient(135deg, #f56c6c 0%, #e6a23c 100%);
-    box-shadow: 0 4px 20px rgba(245, 108, 108, 0.4);
+    box-shadow: 0 4px 16px rgba(245, 108, 108, 0.4);
   }
 }
 
 .encouragement-emoji {
-  font-size: 28px;
-  animation: bounce 1s ease-in-out infinite;
+  font-size: 22px;
 }
 
 .encouragement-message {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   text-align: center;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
 }
 </style>

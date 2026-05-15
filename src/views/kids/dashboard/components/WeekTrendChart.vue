@@ -20,7 +20,6 @@
             :style="{ height: getBarHeight(day.expense) + 'px' }"
             :title="'支出: ' + day.expense"
           >
-            <span v-if="day.expense > 0" class="bar-value">-{{ day.expense }}</span>
           </div>
         </div>
         <span class="day-label">{{ day.dayLabel }}</span>
@@ -50,7 +49,7 @@ const props = withDefaults(
   }>(),
   {
     data: () => [],
-    maxHeight: 100
+    maxHeight: 80
   }
 )
 
@@ -72,13 +71,16 @@ const getBarHeight = (value: number) => {
 .week-trend-chart {
   background: #fff;
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-title {
-  margin: 0 0 20px;
-  font-size: 16px;
+  margin: 0 0 12px;
+  font-size: 14px;
   font-weight: 600;
   color: #303133;
 }
@@ -87,14 +89,15 @@ const getBarHeight = (value: number) => {
   display: flex;
   justify-content: space-around;
   align-items: flex-end;
-  height: 140px;
-  padding-bottom: 30px;
+  flex: 1;
+  min-height: 100px;
+  padding-bottom: 24px;
   position: relative;
 
   &::before {
     content: '';
     position: absolute;
-    bottom: 30px;
+    bottom: 24px;
     left: 0;
     right: 0;
     height: 1px;
@@ -106,20 +109,20 @@ const getBarHeight = (value: number) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
 }
 
 .bar-wrapper {
   display: flex;
   align-items: flex-end;
-  gap: 4px;
-  height: 100px;
+  gap: 3px;
+  height: 80px;
 }
 
 .bar {
-  width: 20px;
-  border-radius: 4px 4px 0 0;
+  width: 16px;
+  border-radius: 3px 3px 0 0;
   position: relative;
   transition: height 0.5s ease-out;
   cursor: pointer;
@@ -139,24 +142,20 @@ const getBarHeight = (value: number) => {
 
 .expense-bar {
   background: linear-gradient(180deg, #f56c6c 0%, #f78989 100%);
-
-  .bar-value {
-    color: #f56c6c;
-  }
 }
 
 .bar-value {
   position: absolute;
-  top: -20px;
+  top: -18px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .day-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #909399;
   font-weight: 500;
 }
@@ -164,15 +163,15 @@ const getBarHeight = (value: number) => {
 .chart-legend {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  margin-top: 10px;
+  gap: 16px;
+  margin-top: 8px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: 11px;
   color: #606266;
 }
 

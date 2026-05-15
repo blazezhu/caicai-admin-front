@@ -76,7 +76,7 @@
           <GoalProgressRing
             :progress="summary.dailyProgress || 0"
             label="今日目标"
-            :size="140"
+            :size="120"
             class="animate-item"
           />
         </div>
@@ -190,7 +190,8 @@ const planStatus = ref<DashboardApi.PlanStatus>({
   weekCompleted: 0,
   weekTotal: 0,
   weekRate: 0,
-  pendingToday: []
+  pendingToday: [],
+  todayPlans: []
 })
 const achievements = ref<DashboardApi.Achievement[]>([])
 const encouragement = ref<DashboardApi.Encouragement>({
@@ -391,18 +392,18 @@ onMounted(async () => {
 // 大屏主页面
 .dashboard-content {
   min-height: 100vh;
-  padding: 20px;
+  padding: 16px;
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   color: #fff;
 
   .header-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
   }
 
@@ -423,12 +424,12 @@ onMounted(async () => {
 }
 
 .dashboard-row {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 
   &.row-1 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 16px;
 
     @media (max-width: 1024px) {
       grid-template-columns: repeat(2, 1fr);
@@ -442,7 +443,7 @@ onMounted(async () => {
   &.row-2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 16px;
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -452,7 +453,7 @@ onMounted(async () => {
   &.row-3 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 16px;
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -540,9 +541,8 @@ onMounted(async () => {
 </style>
 
 <style lang="scss">
-// 覆盖全局样式，允许大屏页面滚动
+// 全局样式覆盖
 .kids-dashboard-view {
-  overflow-y: auto !important;
-  height: 100vh !important;
+  // 不覆盖 overflow，让页面自然滚动
 }
 </style>

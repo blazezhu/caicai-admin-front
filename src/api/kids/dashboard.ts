@@ -61,6 +61,22 @@ export interface WishProgress {
   achieved: boolean
 }
 
+export interface PlanAction {
+  actionId: number
+  actionName: string
+  isCompleted: number  // 0=未完成，1=已完成
+  categoryName: string
+  pointDelta: number
+}
+
+export interface PlanDetail {
+  instanceId: number
+  planName: string
+  status: number  // 0=待执行，1=执行中，2=已完成，3=已过期
+  statusText: string
+  actions: PlanAction[]
+}
+
 export interface PendingPlan {
   instanceId: number
   planName: string
@@ -75,6 +91,7 @@ export interface PlanStatus {
   weekTotal: number
   weekRate: number
   pendingToday: PendingPlan[]
+  todayPlans: PlanDetail[]
 }
 
 export interface Achievement {

@@ -71,17 +71,17 @@ onMounted(() => {
 <style lang="scss" scoped>
 .balance-card {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  border-radius: 20px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 16px 20px;
   color: #fff;
   text-align: center;
-  box-shadow: 0 8px 32px rgba(245, 87, 108, 0.3);
+  box-shadow: 0 4px 16px rgba(245, 87, 108, 0.3);
 }
 
 .balance-label {
-  font-size: 14px;
+  font-size: 12px;
   opacity: 0.9;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .balance-value {
@@ -91,13 +91,13 @@ onMounted(() => {
   gap: 4px;
 
   .amount {
-    font-size: 48px;
+    font-size: 40px;
     font-weight: 700;
     line-height: 1;
   }
 
   .unit {
-    font-size: 16px;
+    font-size: 14px;
     opacity: 0.9;
   }
 }
@@ -105,9 +105,9 @@ onMounted(() => {
 .balance-change {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  margin-top: 12px;
-  font-size: 14px;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 13px;
 
   .income {
     &::before {

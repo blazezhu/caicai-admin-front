@@ -50,7 +50,7 @@ const props = withDefaults(
     progress: 0,
     label: '今日目标',
     size: 120,
-    strokeWidth: 10,
+    strokeWidth: 8,
     progressColor: '#667eea',
     bgColor: 'rgba(255,255,255,0.3)'
   }
@@ -101,10 +101,10 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 14px;
   color: #fff;
-  box-shadow: 0 8px 32px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);
 }
 
 .progress-svg {
@@ -123,15 +123,15 @@ onMounted(() => {
   z-index: 1;
 
   .progress-value {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     line-height: 1;
   }
 
   .progress-label {
-    font-size: 12px;
+    font-size: 11px;
     opacity: 0.9;
-    margin-top: 4px;
+    margin-top: 2px;
   }
 }
 </style>

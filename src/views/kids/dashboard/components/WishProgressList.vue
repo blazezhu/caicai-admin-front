@@ -3,10 +3,10 @@
     <h3 class="section-title">我的心愿</h3>
     <div v-if="wishes.length === 0" class="empty-state">
       <span class="empty-icon">🎁</span>
-      <p>还没有心愿，快去创建一个吧！</p>
+      <p>还没有心愿</p>
     </div>
     <div v-else class="wish-list">
-      <div v-for="wish in wishes" :key="wish.wishId" class="wish-item">
+      <div v-for="wish in wishes.slice(0, 3)" :key="wish.wishId" class="wish-item">
         <div class="wish-icon">{{ wish.icon || '🎁' }}</div>
         <div class="wish-info">
           <div class="wish-name">{{ wish.wishName }}</div>
@@ -50,64 +50,68 @@ withDefaults(
 .wish-progress-list {
   background: #fff;
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .section-title {
-  margin: 0 0 16px;
-  font-size: 16px;
+  margin: 0 0 12px;
+  font-size: 14px;
   font-weight: 600;
   color: #303133;
 }
 
 .empty-state {
   text-align: center;
-  padding: 30px 0;
+  padding: 20px 0;
   color: #909399;
 
   .empty-icon {
-    font-size: 48px;
+    font-size: 36px;
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   p {
     margin: 0;
-    font-size: 14px;
+    font-size: 13px;
   }
 }
 
 .wish-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  flex: 1;
 }
 
 .wish-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 10px;
   background: #f5f7fa;
-  border-radius: 12px;
+  border-radius: 10px;
   transition: transform 0.2s;
 
   &:hover {
-    transform: translateX(4px);
+    transform: translateX(2px);
   }
 }
 
 .wish-icon {
-  font-size: 32px;
-  width: 48px;
-  height: 48px;
+  font-size: 24px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .wish-info {
@@ -116,27 +120,27 @@ withDefaults(
 }
 
 .wish-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #303133;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .wish-progress-bar {
-  height: 8px;
+  height: 6px;
   background: #e4e7ed;
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .wish-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-  border-radius: 4px;
+  border-radius: 3px;
   transition: width 0.5s ease-out;
 
   &.achieved {
@@ -145,7 +149,7 @@ withDefaults(
 }
 
 .wish-points {
-  font-size: 12px;
+  font-size: 11px;
   color: #909399;
 
   .current {
@@ -163,10 +167,10 @@ withDefaults(
 }
 
 .wish-percent {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #667eea;
-  min-width: 50px;
+  min-width: 42px;
   text-align: right;
 
   &.achieved {

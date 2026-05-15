@@ -1,7 +1,7 @@
 <template>
   <div class="profile-card">
     <div class="avatar-wrapper">
-      <el-avatar :size="80" :src="avatar" fit="cover">
+      <el-avatar :size="64" :src="avatar" fit="cover">
         {{ nickname?.charAt(0) || '?' }}
       </el-avatar>
       <div class="level-badge">{{ levelIcon }}</div>
@@ -35,13 +35,13 @@ withDefaults(
 <style lang="scss" scoped>
 .profile-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 16px 20px;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 20px;
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
 .avatar-wrapper {
@@ -49,17 +49,17 @@ withDefaults(
 
   .level-badge {
     position: absolute;
-    bottom: -5px;
-    right: -5px;
-    font-size: 24px;
+    bottom: -4px;
+    right: -4px;
+    font-size: 20px;
     background: #fff;
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -67,13 +67,14 @@ withDefaults(
   flex: 1;
 
   .nickname {
-    margin: 0 0 4px;
-    font-size: 24px;
+    margin: 0 0 2px;
+    font-size: 20px;
     font-weight: 600;
+    line-height: 1.2;
   }
 
   .level-name {
-    font-size: 14px;
+    font-size: 12px;
     opacity: 0.9;
   }
 }
