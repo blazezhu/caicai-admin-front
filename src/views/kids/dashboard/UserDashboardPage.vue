@@ -91,7 +91,8 @@
           <GoalProgressRing
             :progress="summary.dailyProgress || 0"
             label="今日目标"
-            :size="140"
+            :size="120"
+            :stroke-width="10"
             class="animate-item"
           />
         </div>

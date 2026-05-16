@@ -102,7 +102,7 @@ onMounted(() => {
   justify-content: center;
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   border-radius: 16px;
-  padding: 14px;
+  padding: 18px;
   color: #fff;
   box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);
 }
@@ -123,13 +123,13 @@ onMounted(() => {
   z-index: 1;
 
   .progress-value {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     line-height: 1;
   }
 
   .progress-label {
-    font-size: 11px;
+    font-size: 10px;
     opacity: 0.9;
     margin-top: 2px;
   }

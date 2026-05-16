@@ -5,9 +5,9 @@
       <span class="unlocked-count">{{ unlockedCount }}</span>
       <span class="total-count">/ {{ achievements.length }} 已解锁</span>
     </div>
-    <div class="achievement-grid">
+    <div class="achievement-grid" :class="{ 'has-scroll': achievements.length > 12 }">
       <div
-        v-for="achievement in achievements.slice(0, 8)"
+        v-for="achievement in displayAchievements"
         :key="achievement.code"
         class="achievement-item"
         :class="{ unlocked: achievement.unlocked, locked: !achievement.unlocked }"
@@ -40,6 +40,11 @@ const props = withDefaults(
 
 const unlockedCount = computed(() => {
   return props.achievements.filter((a) => a.unlocked).length
+})
+
+// 显示所有成就，支持滚动
+const displayAchievements = computed(() => {
+  return props.achievements
 })
 </script>
 
@@ -77,10 +82,27 @@ const unlockedCount = computed(() => {
 }
 
 .achievement-grid {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  flex: 1;
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 4px;
+  align-content: start;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #dcdfe6;
+    border-radius: 2px;
+  }
 }
 
 .achievement-item {
@@ -88,15 +110,17 @@ const unlockedCount = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 4px;
-  border-radius: 10px;
+  justify-content: center;
+  padding: 12px 8px;
+  border-radius: 12px;
   background: #f5f7fa;
   transition: all 0.3s;
   cursor: pointer;
+  min-height: 70px;
 
   &.unlocked {
     background: linear-gradient(135deg, #fef0f0 0%, #fdf6ec 100%);
-    border: 1px solid #f56c6c;
+    border: 2px solid #f56c6c;
 
     &:hover {
       transform: translateY(-2px);
@@ -111,12 +135,13 @@ const unlockedCount = computed(() => {
 }
 
 .achievement-icon {
-  font-size: 22px;
-  margin-bottom: 2px;
+  font-size: 28px;
+  margin-bottom: 4px;
+  line-height: 1;
 }
 
 .achievement-name {
-  font-size: 10px;
+  font-size: 11px;
   color: #606266;
   text-align: center;
   line-height: 1.2;
@@ -128,8 +153,8 @@ const unlockedCount = computed(() => {
 
 .achievement-lock {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 4px;
   font-size: 10px;
   color: #c0c4cc;
 }
