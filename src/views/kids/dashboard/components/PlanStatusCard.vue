@@ -61,49 +61,51 @@
               </div>
             </div>
           </div>
-          <!-- 第二份数据（无缝滚动用） -->
-          <div
-            v-for="plan in planStatus.todayPlans"
-            :key="'second-' + plan.instanceId"
-            class="plan-item"
-            :class="{ 'plan-completed': plan.status === 2 }"
-          >
-            <div class="plan-header">
-              <div class="plan-info">
-                <span class="plan-status-icon" :class="getStatusClass(plan.status)">
-                  {{ getStatusIcon(plan.status) }}
+          <!-- 第二份数据（仅在需要滚动时才显示，用于无缝滚动） -->
+          <template v-if="needsScroll">
+            <div
+              v-for="plan in planStatus.todayPlans"
+              :key="'second-' + plan.instanceId"
+              class="plan-item"
+              :class="{ 'plan-completed': plan.status === 2 }"
+            >
+              <div class="plan-header">
+                <div class="plan-info">
+                  <span class="plan-status-icon" :class="getStatusClass(plan.status)">
+                    {{ getStatusIcon(plan.status) }}
+                  </span>
+                  <span class="plan-name">{{ plan.planName }}</span>
+                </div>
+                <span class="plan-status-text" :class="getStatusTextClass(plan.status)">
+                  {{ plan.statusText }}
                 </span>
-                <span class="plan-name">{{ plan.planName }}</span>
               </div>
-              <span class="plan-status-text" :class="getStatusTextClass(plan.status)">
-                {{ plan.statusText }}
-              </span>
-            </div>
-            <div v-if="plan.actions && plan.actions.length > 0" class="action-list">
-              <div
-                v-for="action in plan.actions"
-                :key="'second-action-' + action.actionId"
-                class="action-item"
-                :class="{ 'action-completed': action.isCompleted === 1 }"
-              >
-                <span class="action-check">
-                  {{ action.isCompleted === 1 ? '✓' : '○' }}
-                </span>
-                <span class="action-name">{{ action.actionName }}</span>
-                <span
-                  class="action-points"
-                  :class="{ 'points-positive': action.pointDelta > 0, 'points-negative': action.pointDelta < 0 }"
+              <div v-if="plan.actions && plan.actions.length > 0" class="action-list">
+                <div
+                  v-for="action in plan.actions"
+                  :key="'second-action-' + action.actionId"
+                  class="action-item"
+                  :class="{ 'action-completed': action.isCompleted === 1 }"
                 >
-                  {{ formatPointDelta(action.pointDelta) }}
-                </span>
+                  <span class="action-check">
+                    {{ action.isCompleted === 1 ? '✓' : '○' }}
+                  </span>
+                  <span class="action-name">{{ action.actionName }}</span>
+                  <span
+                    class="action-points"
+                    :class="{ 'points-positive': action.pointDelta > 0, 'points-negative': action.pointDelta < 0 }"
+                  >
+                    {{ formatPointDelta(action.pointDelta) }}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          </template>
         </div>
       </div>
 
       <!-- 滚动指示器 -->
-      <div v-if="needsScroll && planStatus.todayPlans.length > visibleCount" class="scroll-indicator">
+      <div v-if="needsScroll" class="scroll-indicator">
         <span class="indicator-dot" :class="{ active: !isScrolling }"></span>
         <span class="indicator-text">{{ currentIndex + 1 }}/{{ planStatus.todayPlans.length }}</span>
         <span class="indicator-dot" :class="{ active: isScrolling }"></span>
