@@ -19,6 +19,7 @@ export interface AccessCodeValidateResp {
   message: string
   bookId?: number
   userId?: number
+  ownerUserId?: number  // 账本所有者用户ID
   nickname?: string
   avatar?: string
 }
@@ -61,12 +62,22 @@ export interface WishProgress {
   achieved: boolean
 }
 
+export interface BranchOption {
+  id: number
+  branchName: string
+  conditionDesc: string
+  pointDelta: number
+}
+
 export interface PlanAction {
   actionId: number
   actionName: string
   isCompleted: number  // 0=未完成，1=已完成
   categoryName: string
   pointDelta: number
+  hasBranch?: number  // 是否有分支：0=无，1=有
+  branches?: BranchOption[]  // 分支选项列表
+  selectedBranchId?: number  // 已选择的分支ID
 }
 
 export interface PlanDetail {
@@ -159,5 +170,21 @@ export const getEncouragement = async (bookId: number, userId?: number) => {
   return await requestApp.get<Encouragement>({
     url: '/app-api/kids/dashboard/encouragement',
     params: { bookId, userId }
+  })
+}
+
+// 大屏完成单个动作
+export const completeAction = async (instanceId: number, actionId: number, ownerUserId: number) => {
+  return await requestApp.post<boolean>({
+    url: '/app-api/kids/dashboard/complete-action',
+    params: { instanceId, actionId, ownerUserId }
+  })
+}
+
+// 大屏完成单个动作（带分支）
+export const completeActionWithBranch = async (instanceId: number, actionId: number, branchId: number, ownerUserId: number) => {
+  return await requestApp.post<boolean>({
+    url: '/app-api/kids/dashboard/complete-action',
+    params: { instanceId, actionId, branchId, ownerUserId }
   })
 }

@@ -90,35 +90,39 @@
           />
           <GoalProgressRing
             :progress="summary.dailyProgress || 0"
-            label="今日目标"
+            label="今日计划完成率"
             :size="120"
             :stroke-width="10"
             class="animate-item"
           />
         </div>
 
-        <!-- 第二行：积分趋势 + 心愿进度 -->
+        <!-- 第二行：今日计划（左侧） + 本周积分趋势 + 心愿进度 + 成就（右侧） -->
         <div class="dashboard-row row-2">
-          <WeekTrendChart
-            :data="summary.weekTrend || []"
-            class="animate-item"
-          />
-          <WishProgressList
-            :wishes="wishes"
-            class="animate-item"
-          />
-        </div>
-
-        <!-- 第三行：计划状态 + 成就徽章 -->
-        <div class="dashboard-row row-3">
-          <PlanStatusCard
-            :plan-status="planStatus"
-            class="animate-item"
-          />
-          <AchievementWall
-            :achievements="achievements"
-            class="animate-item"
-          />
+          <div class="left-column">
+            <PlanStatusCard
+              :plan-status="planStatus"
+              :owner-user-id="ownerUserId"
+              class="animate-item"
+              @action-completed="handleActionCompleted"
+            />
+          </div>
+          <div class="right-column">
+            <div class="top-row">
+              <WeekTrendChart
+                :data="summary.weekTrend || []"
+                class="animate-item"
+              />
+              <WishProgressList
+                :wishes="wishes"
+                class="animate-item"
+              />
+            </div>
+            <AchievementWall
+              :achievements="achievements"
+              class="animate-item"
+            />
+          </div>
         </div>
 
         <!-- 底部鼓励语 -->
@@ -181,6 +185,7 @@ const refreshing = ref(false)
 const bookList = ref<BookApi.AccountBookVO[]>([])
 const currentBookId = ref<number>()
 const currentUserId = ref<number>()
+const ownerUserId = ref<number>()  // 账本所有者用户ID
 
 // 当前账本名称
 const currentBookName = computed(() => {
@@ -248,7 +253,8 @@ const handleValidate = async () => {
     if (result.valid) {
       currentBookId.value = result.bookId || undefined
       currentUserId.value = result.userId || undefined
-      console.log('获取到 userId:', currentUserId.value, 'bookId:', currentBookId.value)
+      ownerUserId.value = result.ownerUserId || result.userId || undefined
+      console.log('获取到 userId:', currentUserId.value, 'bookId:', currentBookId.value, 'ownerUserId:', ownerUserId.value)
       isValidated.value = true
       isFromAccessCode.value = true
       // 获取该用户的所有账本
@@ -345,6 +351,21 @@ const handleRefresh = async () => {
   refreshing.value = true
   await loadAllData()
   refreshing.value = false
+}
+
+// 动作完成后的回调
+const handleActionCompleted = async () => {
+  // 重新加载计划状态和汇总数据
+  try {
+    const [planRes, summaryRes] = await Promise.all([
+      DashboardApi.getPlanStatus(currentBookId.value, currentUserId.value),
+      DashboardApi.getDashboardSummary(currentBookId.value, currentUserId.value)
+    ])
+    planStatus.value = planRes || planStatus.value
+    summary.value = summaryRes
+  } catch (e: any) {
+    console.error('刷新数据失败', e)
+  }
 }
 
 // 初始化 - 检查URL中的访问码
@@ -570,22 +591,40 @@ onMounted(async () => {
 
   &.row-2 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      .top-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
+      }
     }
   }
 
   &.row-3 {
+    // 成就徽章
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 20px;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
   }
 
   &.row-4 {
@@ -603,11 +642,12 @@ onMounted(async () => {
 .row-1 .animate-item:nth-child(2) { animation-delay: 0.2s; }
 .row-1 .animate-item:nth-child(3) { animation-delay: 0.3s; }
 
-.row-2 .animate-item:nth-child(1) { animation-delay: 0.4s; }
-.row-2 .animate-item:nth-child(2) { animation-delay: 0.5s; }
+.row-2 .animate-item { animation-delay: 0.4s; }
+.row-2 .right-column .top-row .animate-item:nth-child(1) { animation-delay: 0.5s; }
+.row-2 .right-column .top-row .animate-item:nth-child(2) { animation-delay: 0.6s; }
+.row-2 .right-column .animate-item:nth-child(2) { animation-delay: 0.7s; }
 
-.row-3 .animate-item:nth-child(1) { animation-delay: 0.6s; }
-.row-3 .animate-item:nth-child(2) { animation-delay: 0.7s; }
+.row-4 .animate-item { animation-delay: 0.8s; }
 
 .row-4 .animate-item { animation-delay: 0.8s; }
 

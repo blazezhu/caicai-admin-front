@@ -18,15 +18,13 @@
       </div>
     </div>
 
-    <!-- 今日计划详情列表 - 滚动显示 -->
+    <!-- 今日计划详情列表 -->
     <div v-if="planStatus.todayPlans && planStatus.todayPlans.length > 0" class="plans-container">
-      <!-- 滚动区域 -->
-      <div class="plans-scroll-wrapper" :style="scrollWrapperStyle">
-        <div class="plans-scroll-content" :class="{ scrolling: isScrolling }">
-          <!-- 第一份数据 -->
+      <div class="plans-scroll-wrapper" ref="scrollWrapperRef">
+        <div class="plans-scroll-content">
           <div
             v-for="plan in planStatus.todayPlans"
-            :key="'first-' + plan.instanceId"
+            :key="plan.instanceId"
             class="plan-item"
             :class="{ 'plan-completed': plan.status === 2 }"
           >
@@ -45,70 +43,54 @@
               <div
                 v-for="action in plan.actions"
                 :key="action.actionId"
-                class="action-item"
-                :class="{ 'action-completed': action.isCompleted === 1 }"
+                class="action-item-wrapper"
               >
-                <span class="action-check">
-                  {{ action.isCompleted === 1 ? '✓' : '○' }}
-                </span>
-                <span class="action-name">{{ action.actionName }}</span>
-                <span
-                  class="action-points"
-                  :class="{ 'points-positive': action.pointDelta > 0, 'points-negative': action.pointDelta < 0 }"
-                >
-                  {{ formatPointDelta(action.pointDelta) }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <!-- 第二份数据（仅在需要滚动时才显示，用于无缝滚动） -->
-          <template v-if="needsScroll">
-            <div
-              v-for="plan in planStatus.todayPlans"
-              :key="'second-' + plan.instanceId"
-              class="plan-item"
-              :class="{ 'plan-completed': plan.status === 2 }"
-            >
-              <div class="plan-header">
-                <div class="plan-info">
-                  <span class="plan-status-icon" :class="getStatusClass(plan.status)">
-                    {{ getStatusIcon(plan.status) }}
-                  </span>
-                  <span class="plan-name">{{ plan.planName }}</span>
-                </div>
-                <span class="plan-status-text" :class="getStatusTextClass(plan.status)">
-                  {{ plan.statusText }}
-                </span>
-              </div>
-              <div v-if="plan.actions && plan.actions.length > 0" class="action-list">
                 <div
-                  v-for="action in plan.actions"
-                  :key="'second-action-' + action.actionId"
                   class="action-item"
-                  :class="{ 'action-completed': action.isCompleted === 1 }"
+                  :class="{
+                    'action-completed': action.isCompleted === 1,
+                    'action-clickable': action.isCompleted !== 1 && !isPendingAction(action) && action.hasBranch !== 1,
+                    'action-pending': isPendingAction(action),
+                    'action-branch-pending': action.hasBranch === 1 && isSelectingBranch(action)
+                  }"
+                  @click="handleActionClick(plan.instanceId, action)"
                 >
                   <span class="action-check">
-                    {{ action.isCompleted === 1 ? '✓' : '○' }}
+                    {{ action.isCompleted === 1 ? '✓' : isPendingAction(action) ? '?' : isSelectingBranch(action) ? '!' : '○' }}
                   </span>
                   <span class="action-name">{{ action.actionName }}</span>
+                  <span v-if="isPendingAction(action)" class="confirm-hint">点击确认</span>
+                  <span v-else-if="isSelectingBranch(action)" class="confirm-hint">选分支</span>
                   <span
+                    v-else
                     class="action-points"
                     :class="{ 'points-positive': action.pointDelta > 0, 'points-negative': action.pointDelta < 0 }"
                   >
                     {{ formatPointDelta(action.pointDelta) }}
                   </span>
                 </div>
+                <div v-if="action.hasBranch === 1 && isSelectingBranch(action)" class="branch-options">
+                  <div
+                    v-for="branch in action.branches"
+                    :key="branch.id"
+                    class="branch-item"
+                    :class="{ 'branch-selected': selectedBranchId === branch.id }"
+                    @click.stop="handleBranchSelect(plan.instanceId, action, branch)"
+                  >
+                    <span class="branch-name">{{ branch.branchName }}</span>
+                    <span v-if="branch.conditionDesc" class="branch-desc">{{ branch.conditionDesc }}</span>
+                    <span
+                      class="branch-points"
+                      :class="{ 'points-positive': branch.pointDelta > 0, 'points-negative': branch.pointDelta < 0 }"
+                    >
+                      {{ branch.pointDelta > 0 ? '+' : '' }}{{ branch.pointDelta }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-          </template>
+          </div>
         </div>
-      </div>
-
-      <!-- 滚动指示器 -->
-      <div v-if="needsScroll" class="scroll-indicator">
-        <span class="indicator-dot" :class="{ active: !isScrolling }"></span>
-        <span class="indicator-text">{{ currentIndex + 1 }}/{{ planStatus.todayPlans.length }}</span>
-        <span class="indicator-dot" :class="{ active: isScrolling }"></span>
       </div>
     </div>
 
@@ -134,13 +116,16 @@
 </template>
 
 <script lang="ts" setup>
-import type { PlanStatus } from '@/api/kids/dashboard'
+import { ElMessage } from 'element-plus'
+import * as DashboardApi from '@/api/kids/dashboard'
+import type { PlanStatus, PlanAction } from '@/api/kids/dashboard'
 
 defineOptions({ name: 'PlanStatusCard' })
 
 const props = withDefaults(
   defineProps<{
     planStatus: PlanStatus
+    ownerUserId?: number
   }>(),
   {
     planStatus: () => ({
@@ -152,116 +137,117 @@ const props = withDefaults(
       weekRate: 0,
       pendingToday: [],
       todayPlans: []
-    })
+    }),
+    ownerUserId: undefined
   }
 )
 
-// 自动滚动相关
+// 事件
+const emit = defineEmits<{
+  (e: 'action-completed'): void
+}>()
+
+// 确认状态相关
+const pendingAction = ref<{ instanceId: number; action: PlanAction } | null>(null)
+const pendingTimer = ref<number>()
+const selectedBranchId = ref<number | null>(null)
+
+// 处理动作点击
+const handleActionClick = async (instanceId: number, action: PlanAction) => {
+  // 已完成的动作不能点击
+  if (action.isCompleted === 1) return
+
+  // 没有 ownerUserId 则无法完成
+  if (!props.ownerUserId) {
+    ElMessage.warning('无法完成动作：缺少用户信息')
+    return
+  }
+
+  // 如果有分支且没有选中分支，进入选择分支状态
+  if (action.hasBranch === 1 && selectedBranchId.value === null) {
+    cancelPending()
+    pendingAction.value = { instanceId, action }
+    selectedBranchId.value = null  // 重置分支选择
+    return
+  }
+
+  // 如果已有待确认的动作，点击其他动作会取消当前选择
+  if (pendingAction.value && pendingAction.value.action.actionId !== action.actionId) {
+    cancelPending()
+  }
+
+  // 如果是同一动作再次点击，确认完成
+  if (pendingAction.value && pendingAction.value.action.actionId === action.actionId) {
+    clearTimeout(pendingTimer.value)
+    pendingAction.value = null
+    await confirmAction(instanceId, action)
+    selectedBranchId.value = null
+    return
+  }
+
+  // 第一次点击，进入待确认状态
+  pendingAction.value = { instanceId, action }
+  pendingTimer.value = window.setTimeout(() => {
+    pendingAction.value = null
+    selectedBranchId.value = null
+  }, 1500)  // 1.5秒后自动取消
+}
+
+// 选择分支
+const handleBranchSelect = async (instanceId: number, action: PlanAction, branch: BranchOption) => {
+  selectedBranchId.value = branch.id
+
+  // 短暂延迟后自动确认
+  await new Promise(resolve => setTimeout(resolve, 300))
+  pendingAction.value = null
+  selectedBranchId.value = null
+  await confirmActionWithBranch(instanceId, action, branch.id)
+}
+
+// 取消待确认状态
+const cancelPending = () => {
+  if (pendingTimer.value) {
+    clearTimeout(pendingTimer.value)
+    pendingTimer.value = undefined
+  }
+  pendingAction.value = null
+  selectedBranchId.value = null
+}
+
+// 判断是否在选择分支状态
+const isSelectingBranch = (action: PlanAction) => {
+  return pendingAction.value?.action.actionId === action.actionId && action.hasBranch === 1 && selectedBranchId.value === null
+}
+
+// 判断动作是否处于待确认状态
+const isPendingAction = (action: PlanAction) => {
+  return pendingAction.value?.action.actionId === action.actionId
+}
+
+// 确认完成动作（无分支）
+const confirmAction = async (instanceId: number, action: PlanAction) => {
+  try {
+    await DashboardApi.completeAction(instanceId, action.actionId, props.ownerUserId!)
+    ElMessage.success(`${action.actionName} 已完成！`)
+    emit('action-completed')
+  } catch (e: any) {
+    ElMessage.error('完成动作失败：' + (e.message || '未知错误'))
+  }
+}
+
+// 确认完成动作（有分支）
+const confirmActionWithBranch = async (instanceId: number, action: PlanAction, branchId: number) => {
+  try {
+    await DashboardApi.completeActionWithBranch(instanceId, action.actionId, branchId, props.ownerUserId!)
+    ElMessage.success(`${action.actionName} 已完成！`)
+    emit('action-completed')
+  } catch (e: any) {
+    ElMessage.error('完成动作失败：' + (e.message || '未知错误'))
+  }
+}
+
+// 滚动相关变量（保留用于手动滚动场景）
 const scrollWrapperRef = ref<HTMLElement>()
-const isScrolling = ref(false)
-const currentIndex = ref(0)
-const scrollInterval = ref<number>()
-const animationFrame = ref<number>()
-
-// 每次显示的计划数量
-const visibleCount = ref(3)
-
-// 是否需要滚动
-const needsScroll = computed(() => {
-  return (props.planStatus.todayPlans?.length || 0) > visibleCount.value
-})
-
-// 滚动配置
-const scrollDuration = 800 // 滚动动画时长(ms)
-const pauseDuration = 3000 // 滚动间隔时间(ms)
-
-// 计算单个计划项的高度
-const singlePlanHeight = 90 // 估算每个计划项的高度
-
-// 滚动容器样式
-const scrollWrapperStyle = computed(() => ({
-  '--scroll-height': `${singlePlanHeight * visibleCount.value}px`
-}))
-
-// 开始自动滚动
-const startAutoScroll = () => {
-  if (!needsScroll.value) return
-
-  scrollInterval.value = window.setInterval(() => {
-    scrollToNext()
-  }, pauseDuration)
-}
-
-// 滚动到下一个
-const scrollToNext = () => {
-  const wrapper = scrollWrapperRef.value
-  if (!wrapper) return
-
-  const plans = props.planStatus.todayPlans || []
-  if (plans.length <= 1) return
-
-  isScrolling.value = true
-  currentIndex.value = (currentIndex.value + 1) % plans.length
-
-  const scrollTop = singlePlanHeight
-  const startTop = wrapper.scrollTop
-  const startTime = performance.now()
-
-  const animate = (currentTime: number) => {
-    const elapsed = currentTime - startTime
-    const progress = Math.min(elapsed / scrollDuration, 1)
-
-    // 使用 easeInOutCubic 缓动函数
-    const easeProgress = progress < 0.5
-      ? 4 * progress * progress * progress
-      : 1 - Math.pow(-2 * progress + 2, 3) / 2
-
-    wrapper.scrollTop = startTop + (scrollTop - startTop) * easeProgress
-
-    if (progress < 1) {
-      animationFrame.value = requestAnimationFrame(animate)
-    } else {
-      // 滚动完成，复位到起点实现无缝
-      if (currentIndex.value === 0) {
-        wrapper.scrollTop = 0
-      }
-      isScrolling.value = false
-    }
-  }
-
-  animationFrame.value = requestAnimationFrame(animate)
-}
-
-// 停止滚动
-const stopAutoScroll = () => {
-  if (scrollInterval.value) {
-    clearInterval(scrollInterval.value)
-    scrollInterval.value = undefined
-  }
-  if (animationFrame.value) {
-    cancelAnimationFrame(animationFrame.value)
-    animationFrame.value = undefined
-  }
-}
-
-// 监听数据变化，重新启动滚动
-watch(() => props.planStatus.todayPlans, (newPlans) => {
-  stopAutoScroll()
-  currentIndex.value = 0
-  if (scrollWrapperRef.value) {
-    scrollWrapperRef.value.scrollTop = 0
-  }
-  if (newPlans && newPlans.length > visibleCount.value) {
-    nextTick(() => {
-      startAutoScroll()
-    })
-  }
-}, { immediate: true })
-
-// 组件卸载时清理
-onUnmounted(() => {
-  stopAutoScroll()
-})
 
 const getStars = (rate: number) => {
   if (rate >= 100) return '⭐⭐⭐'
@@ -311,11 +297,10 @@ const formatPointDelta = (delta: number) => {
 .plan-status-card {
   background: #fff;
   border-radius: 16px;
-  padding: 16px;
+  padding: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   height: 100%;
-  min-height: 380px;
-  max-height: 480px;
+  min-height: 600px;
   display: flex;
   flex-direction: column;
 }
@@ -387,9 +372,26 @@ const formatPointDelta = (delta: number) => {
 
 .plans-scroll-wrapper {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
   position: relative;
-  max-height: var(--scroll-height, 270px);
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+
+    &:hover {
+      background: #a1a1a1;
+    }
+  }
 }
 
 .plans-scroll-content {
@@ -481,12 +483,127 @@ const formatPointDelta = (delta: number) => {
   color: #606266;
   padding: 2px 0;
 
+  &.action-clickable {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: 0 -4px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #e8f4ff;
+      color: #409eff;
+    }
+
+    .action-check {
+      color: #409eff;
+    }
+  }
+
+  &.action-pending {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 4px 6px;
+    margin: 0 -4px;
+    background: #fff3e0;
+    border: 1px solid #ffb800;
+    color: #fa8c16;
+    animation: pulse 0.6s ease-in-out infinite alternate;
+
+    .action-check {
+      color: #fa8c16;
+      font-weight: bold;
+    }
+  }
+
+  &.action-branch-pending {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 4px 6px;
+    margin: 0 -4px;
+    background: #e3f2fd;
+    border: 1px solid #409eff;
+    color: #409eff;
+
+    .action-check {
+      color: #409eff;
+    }
+  }
+
   &.action-completed {
     color: #67c23a;
 
     .action-check {
       color: #67c23a;
     }
+  }
+}
+
+.action-item-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+// 分支选项
+.branch-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0 4px 24px;
+}
+
+.branch-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f0f9eb;
+  border: 1px solid #67c23a;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #d4edda;
+    transform: scale(1.02);
+  }
+
+  &.branch-selected {
+    background: #67c23a;
+    border-color: #67c23a;
+    color: #fff;
+
+    .branch-points {
+      color: #fff;
+    }
+  }
+}
+
+.branch-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: inherit;
+}
+
+.branch-desc {
+  font-size: 10px;
+  color: #909399;
+  flex: 1;
+}
+
+.branch-points {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@keyframes pulse {
+  from {
+    background: #fff3e0;
+    transform: scale(1);
+  }
+  to {
+    background: #ffe7b3;
+    transform: scale(1.02);
   }
 }
 
@@ -498,6 +615,13 @@ const formatPointDelta = (delta: number) => {
 
 .action-name {
   flex: 1;
+}
+
+.confirm-hint {
+  font-size: 10px;
+  color: #fa8c16;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .action-points {
@@ -512,36 +636,6 @@ const formatPointDelta = (delta: number) => {
   &.points-negative {
     color: #f56c6c;
   }
-}
-
-// 滚动指示器
-.scroll-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 0 4px;
-}
-
-.indicator-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #d0d0d0;
-  transition: all 0.3s ease;
-
-  &.active {
-    background: #667eea;
-    width: 18px;
-    border-radius: 3px;
-  }
-}
-
-.indicator-text {
-  font-size: 11px;
-  color: #909399;
-  min-width: 40px;
-  text-align: center;
 }
 
 // 无计划提示

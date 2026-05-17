@@ -75,38 +75,40 @@
           />
           <GoalProgressRing
             :progress="summary.dailyProgress || 0"
-            label="今日目标"
+            label="今日计划完成率"
             :size="120"
             class="animate-item"
           />
         </div>
 
-        <!-- 第二行：积分趋势 + 心愿进度 -->
+        <!-- 第二行：今日计划（左侧） + 本周积分趋势 + 心愿进度 + 成就（右侧） -->
         <div class="dashboard-row row-2">
-          <WeekTrendChart
-            :data="summary.weekTrend || []"
-            class="animate-item"
-          />
-          <WishProgressList
-            :wishes="wishes"
-            class="animate-item"
-          />
-        </div>
-
-        <!-- 第三行：计划状态 + 成就徽章 -->
-        <div class="dashboard-row row-3">
-          <PlanStatusCard
-            :plan-status="planStatus"
-            class="animate-item"
-          />
-          <AchievementWall
-            :achievements="achievements"
-            class="animate-item"
-          />
+          <div class="left-column">
+            <PlanStatusCard
+              :plan-status="planStatus"
+              class="animate-item"
+            />
+          </div>
+          <div class="right-column">
+            <div class="top-row">
+              <WeekTrendChart
+                :data="summary.weekTrend || []"
+                class="animate-item"
+              />
+              <WishProgressList
+                :wishes="wishes"
+                class="animate-item"
+              />
+            </div>
+            <AchievementWall
+              :achievements="achievements"
+              class="animate-item"
+            />
+          </div>
         </div>
 
         <!-- 底部鼓励语 -->
-        <div class="dashboard-row row-4 animate-item">
+        <div class="dashboard-row row-3 animate-item">
           <EncouragementBanner
             :message="encouragement.message"
             :emoji="encouragement.emoji"
@@ -442,26 +444,38 @@ onMounted(async () => {
 
   &.row-2 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 16px;
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .top-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
+      }
     }
   }
 
   &.row-3 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  &.row-4 {
-    text-align: center;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -476,13 +490,13 @@ onMounted(async () => {
 .row-1 .animate-item:nth-child(2) { animation-delay: 0.2s; }
 .row-1 .animate-item:nth-child(3) { animation-delay: 0.3s; }
 
-.row-2 .animate-item:nth-child(1) { animation-delay: 0.4s; }
-.row-2 .animate-item:nth-child(2) { animation-delay: 0.5s; }
+.row-2 .animate-item { animation-delay: 0.4s; }
+.row-2 .right-column .animate-item:nth-child(1) { animation-delay: 0.5s; }
+.row-2 .right-column .animate-item:nth-child(2) { animation-delay: 0.6s; }
 
-.row-3 .animate-item:nth-child(1) { animation-delay: 0.6s; }
-.row-3 .animate-item:nth-child(2) { animation-delay: 0.7s; }
+.row-3 .animate-item { animation-delay: 0.7s; }
 
-.row-4 .animate-item { animation-delay: 0.8s; }
+.row-4 .animate-item { animation-delay: 0.7s; }
 
 @keyframes fadeInUp {
   from {
