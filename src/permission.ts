@@ -57,7 +57,8 @@ const whiteList = [
   '/oauthLogin/gitee',
   '/messageSelect',
   '/kids/dashboard/access',
-  '/kids/dashboard/view'
+  '/kids/dashboard/view',
+  '/kids/dashboard/user'
 ]
 
 // 路由加载前
