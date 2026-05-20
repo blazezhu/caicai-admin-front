@@ -140,5 +140,14 @@ export default[
         title: '用户大屏',
         roles: ['*']
     }
+},
+{
+    path: '/kids/config',
+    name: 'KidsConfig',
+    component: () => import('@/views/kids/config/index.vue'),
+    meta: {
+        title: '儿童模块配置',
+        roles: ['*']
+    }
 }
 ]
