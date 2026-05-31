@@ -267,22 +267,58 @@ const isPendingAction = (action: PlanAction) => {
 // 确认完成动作（无分支）
 const confirmAction = async (instanceId: number, action: PlanAction) => {
   try {
+    // 操作前检查：确保动作状态未变化
+    const currentAction = props.planStatus.todayPlans
+      ?.flatMap(p => p.actions || [])
+      .find(a => a.actionId === action.actionId)
+
+    if (currentAction && currentAction.isCompleted === 1) {
+      ElMessage.warning('该动作已被完成，请刷新页面查看最新状态')
+      emit('action-completed')
+      return
+    }
+
     await DashboardApi.completeAction(instanceId, action.actionId, props.ownerUserId!)
     ElMessage.success(`${action.actionName} 已完成！`)
     emit('action-completed')
   } catch (e: any) {
-    ElMessage.error('完成动作失败：' + (e.message || '未知错误'))
+    const errorMsg = e.message || '完成动作失败'
+    // 如果是实例已确认的错误，提示更明确
+    if (errorMsg.includes('已确认') || errorMsg.includes('已完成')) {
+      ElMessage.warning('该计划已被其他设备确认完成，请刷新页面')
+      emit('action-completed')
+    } else {
+      ElMessage.error(errorMsg)
+    }
   }
 }
 
 // 确认完成动作（有分支）
 const confirmActionWithBranch = async (instanceId: number, action: PlanAction, branchId: number) => {
   try {
+    // 操作前检查：确保动作状态未变化
+    const currentAction = props.planStatus.todayPlans
+      ?.flatMap(p => p.actions || [])
+      .find(a => a.actionId === action.actionId)
+
+    if (currentAction && currentAction.isCompleted === 1) {
+      ElMessage.warning('该动作已被完成，请刷新页面查看最新状态')
+      emit('action-completed')
+      return
+    }
+
     await DashboardApi.completeActionWithBranch(instanceId, action.actionId, branchId, props.ownerUserId!)
     ElMessage.success(`${action.actionName} 已完成！`)
     emit('action-completed')
   } catch (e: any) {
-    ElMessage.error('完成动作失败：' + (e.message || '未知错误'))
+    const errorMsg = e.message || '完成动作失败'
+    // 如果是实例已确认的错误，提示更明确
+    if (errorMsg.includes('已确认') || errorMsg.includes('已完成')) {
+      ElMessage.warning('该计划已被其他设备确认完成，请刷新页面')
+      emit('action-completed')
+    } else {
+      ElMessage.error(errorMsg)
+    }
   }
 }
 
@@ -293,12 +329,30 @@ const handleUndoAction = async (instanceId: number, action: PlanAction) => {
     return
   }
 
+  // 操作前检查：确保动作仍然是完成状态
+  const currentAction = props.planStatus.todayPlans
+    ?.flatMap(p => p.actions || [])
+    .find(a => a.actionId === action.actionId)
+
+  if (currentAction && currentAction.isCompleted === 0) {
+    ElMessage.warning('该动作已被撤销，请刷新页面查看最新状态')
+    emit('action-completed')
+    return
+  }
+
   try {
     await DashboardApi.undoActionComplete(instanceId, action.actionId, props.ownerUserId)
     ElMessage.success(`已撤销 ${action.actionName}`)
     emit('action-completed')
   } catch (e: any) {
-    ElMessage.error('撤销失败：' + (e.message || '未知错误'))
+    const errorMsg = e.message || '撤销失败'
+    // 如果是实例已确认或动作未完成的错误，提示并刷新
+    if (errorMsg.includes('已确认') || errorMsg.includes('未完成')) {
+      ElMessage.warning('该动作无法撤销，请刷新页面查看最新状态')
+      emit('action-completed')
+    } else {
+      ElMessage.error(errorMsg)
+    }
   }
 }
 

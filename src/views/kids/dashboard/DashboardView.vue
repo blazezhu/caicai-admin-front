@@ -86,7 +86,9 @@
           <div class="left-column">
             <PlanStatusCard
               :plan-status="planStatus"
+              :owner-user-id="currentUserId"
               class="animate-item"
+              @action-completed="handleActionCompleted"
             />
           </div>
           <div class="right-column">
@@ -278,6 +280,12 @@ const handleRefresh = async () => {
   refreshing.value = true
   await loadAllData()
   refreshing.value = false
+}
+
+// 处理动作完成事件
+const handleActionCompleted = async () => {
+  // 动作完成后立即刷新数据
+  await loadAllData()
 }
 
 // 初始化
