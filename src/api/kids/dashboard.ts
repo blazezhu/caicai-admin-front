@@ -75,6 +75,8 @@ export interface PlanAction {
   isCompleted: number  // 0=未完成，1=已完成
   categoryName: string
   pointDelta: number
+  pointOnComplete?: number  // 完成时的积分
+  pointOnIncomplete?: number  // 未完成时的积分
   hasBranch?: number  // 是否有分支：0=无，1=有
   branches?: BranchOption[]  // 分支选项列表
   selectedBranchId?: number  // 已选择的分支ID
@@ -186,5 +188,13 @@ export const completeActionWithBranch = async (instanceId: number, actionId: num
   return await requestApp.post<boolean>({
     url: '/app-api/kids/dashboard/complete-action',
     params: { instanceId, actionId, branchId, ownerUserId }
+  })
+}
+
+// 大屏撤销动作完成
+export const undoActionComplete = async (instanceId: number, actionId: number, ownerUserId: number) => {
+  return await requestApp.post<boolean>({
+    url: '/app-api/kids/dashboard/undo-action',
+    params: { instanceId, actionId, ownerUserId }
   })
 }

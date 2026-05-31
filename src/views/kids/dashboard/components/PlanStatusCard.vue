@@ -59,8 +59,48 @@
                     {{ action.isCompleted === 1 ? '✓' : isPendingAction(action) ? '?' : isSelectingBranch(action) ? '!' : '○' }}
                   </span>
                   <span class="action-name">{{ action.actionName }}</span>
-                  <span v-if="isPendingAction(action)" class="confirm-hint">点击确认</span>
-                  <span v-else-if="isSelectingBranch(action)" class="confirm-hint">选分支</span>
+
+                  <!-- 已完成状态：显示撤销按钮 -->
+                  <span v-if="action.isCompleted === 1" class="action-controls">
+                    <span
+                      class="action-points"
+                      :class="{ 'points-positive': action.pointDelta > 0, 'points-negative': action.pointDelta < 0 }"
+                    >
+                      {{ formatPointDelta(action.pointDelta) }}
+                    </span>
+                    <span class="undo-btn" @click.stop="handleUndoAction(plan.instanceId, action)" title="撤销">↶</span>
+                  </span>
+
+                  <!-- 待确认状态：显示取消按钮 -->
+                  <span v-else-if="isPendingAction(action)" class="action-controls">
+                    <span class="confirm-hint">点击确认</span>
+                    <span class="cancel-btn" @click.stop="cancelPending">✕</span>
+                  </span>
+
+                  <!-- 选择分支状态：显示提示 -->
+                  <span v-else-if="isSelectingBranch(action)" class="action-controls">
+                    <span class="confirm-hint">选分支</span>
+                    <span class="cancel-btn" @click.stop="cancelPending">✕</span>
+                  </span>
+
+                  <!-- 没有分支：显示完成/未完成积分 -->
+                  <div v-else-if="action.hasBranch !== 1" class="action-points-detail">
+                    <span class="point-item complete">
+                      <span class="point-label">完成</span>
+                      <span class="point-value" :class="{ 'points-positive': (action.pointOnComplete || 0) > 0, 'points-negative': (action.pointOnComplete || 0) < 0 }">
+                        {{ formatPointDelta(action.pointOnComplete || 0) }}
+                      </span>
+                    </span>
+                    <span class="point-divider">/</span>
+                    <span class="point-item incomplete">
+                      <span class="point-label">未完成</span>
+                      <span class="point-value" :class="{ 'points-positive': (action.pointOnIncomplete || 0) > 0, 'points-negative': (action.pointOnIncomplete || 0) < 0 }">
+                        {{ formatPointDelta(action.pointOnIncomplete || 0) }}
+                      </span>
+                    </span>
+                  </div>
+
+                  <!-- 其他情况：显示当前积分 -->
                   <span
                     v-else
                     class="action-points"
@@ -243,6 +283,22 @@ const confirmActionWithBranch = async (instanceId: number, action: PlanAction, b
     emit('action-completed')
   } catch (e: any) {
     ElMessage.error('完成动作失败：' + (e.message || '未知错误'))
+  }
+}
+
+// 撤销动作完成
+const handleUndoAction = async (instanceId: number, action: PlanAction) => {
+  if (!props.ownerUserId) {
+    ElMessage.warning('无法撤销：缺少用户信息')
+    return
+  }
+
+  try {
+    await DashboardApi.undoActionComplete(instanceId, action.actionId, props.ownerUserId)
+    ElMessage.success(`已撤销 ${action.actionName}`)
+    emit('action-completed')
+  } catch (e: any) {
+    ElMessage.error('撤销失败：' + (e.message || '未知错误'))
   }
 }
 
@@ -636,6 +692,98 @@ const formatPointDelta = (delta: number) => {
   &.points-negative {
     color: #f56c6c;
   }
+}
+
+.action-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  color: #606266;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.2);
+    color: #303133;
+    transform: scale(1.1);
+  }
+}
+
+.undo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(103, 194, 58, 0.1);
+  color: #67c23a;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 4px;
+
+  &:hover {
+    background: rgba(103, 194, 58, 0.2);
+    color: #529b2e;
+    transform: scale(1.15) rotate(-15deg);
+  }
+}
+
+.action-points-detail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+
+.point-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f5f7fa;
+  min-width: 48px;
+}
+
+.point-label {
+  font-size: 9px;
+  color: #909399;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.point-value {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+
+  &.points-positive {
+    color: #67c23a;
+  }
+  &.points-negative {
+    color: #f56c6c;
+  }
+}
+
+.point-divider {
+  font-size: 10px;
+  color: #dcdfe6;
+  font-weight: bold;
 }
 
 // 无计划提示
