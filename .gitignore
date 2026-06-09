@@ -7,7 +7,4 @@ pnpm-debug
 auto-*.d.ts
 .idea
 .history
-.env
-.env.local
-.env.prod
-.env.dev
+
