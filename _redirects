@@ -1,0 +1,20 @@
+/*
+ * Cloudflare Pages _redirects 文件
+ * 用途：处理 Vue Router 前端路由，防止刷新页面 404
+ *
+ * 放置位置：caicai-admin-front/_redirects
+ * 部署时会被 Cloudflare Pages 自动识别和配置
+ */
+
+# 解决 Vue Router 前端路由问题
+# 所有不存在的路径都重定向到 index.html，由前端 Vue Router 处理
+/*    /index.html   200
+
+# 其他可选的重定向规则示例（根据需要添加）
+
+# 自定义 404 页面（可选）
+# /404    /404.html    404
+
+# 重定向规则示例
+# /old-page  /new-page  301
+# /blog/*    https://blog.example.com/:splat  200
