@@ -80,6 +80,7 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260609.1",
     "@commitlint/cli": "^19.0.1",
     "@commitlint/config-conventional": "^19.0.0",
     "@iconify/json": "^2.2.187",
