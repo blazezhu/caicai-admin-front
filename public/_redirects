@@ -6,6 +6,9 @@
  * 部署时会被 Cloudflare Pages 自动识别和配置
  */
 
+# 儿童大屏独立页面 - 直接返回文件，不走 SPA fallback
+/dashboard.html    /dashboard.html    200
+
 # 解决 Vue Router 前端路由问题
 # 所有不存在的路径都重定向到 index.html，由前端 Vue Router 处理
 /*    /index.html   200

@@ -174,6 +174,9 @@
                   >
                     修改余额
                   </el-dropdown-item>
+                  <el-dropdown-item command="handleDeregister">
+                    <span style="color: #f56c6c">注销用户</span>
+                  </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -305,9 +308,28 @@ const handleCommand = (command: string, row: UserApi.UserVO) => {
     case 'handleUpdateBlance':
       UpdateBalanceFormRef.value.open(row.id)
       break
+    case 'handleDeregister':
+      handleDeregister(row)
+      break
     default:
       break
   }
+}
+
+/** 注销用户 */
+import request from '@/config/axios'
+
+const handleDeregister = async (row: UserApi.UserVO) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要注销用户「${row.nickname || row.mobile || row.id}」吗？\n\n此操作将：\n• 移除该用户的所有账本成员关系\n• 删除该用户的积分记录、模板、类别、愿望\n• 删除该用户的邀请数据\n• 注销该用户账号\n\n此操作不可恢复！`,
+      '危险操作 - 注销用户',
+      { type: 'warning', confirmButtonText: '确认注销', cancelButtonText: '取消' }
+    )
+    await request.delete({ url: '/kids/referral/deregister', params: { userId: row.id } })
+    ElMessage.success('用户已注销')
+    getList()
+  } catch {}
 }
 
 /** 初始化 **/

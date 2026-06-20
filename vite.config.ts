@@ -39,7 +39,18 @@ export default ({command, mode}: ConfigEnv): UserConfig => {
             // },
         },
         // 项目使用的vite插件。 单独提取到build/vite/plugin中管理
-        plugins: createVitePlugins(),
+        plugins: [
+            ...createVitePlugins(),
+            // 替换 dashboard.html 中的环境变量
+            {
+                name: 'transform-dashboard-html',
+                transformIndexHtml(html, { path }) {
+                    if (path.includes('dashboard.html') || path === '/dashboard.html') {
+                        return html.replace(/%VITE_BASE_URL%/g, env.VITE_BASE_URL || '')
+                    }
+                }
+            }
+        ],
         css: {
             preprocessorOptions: {
                 scss: {
@@ -74,6 +85,10 @@ export default ({command, mode}: ConfigEnv): UserConfig => {
                 }
             },
             rollupOptions: {
+                input: {
+                    main: pathResolve('index.html'),
+                    dashboard: pathResolve('dashboard.html'),
+                },
                 output: {
                     manualChunks: {
                         echarts: ['echarts'] // 将 echarts 单独打包，参考 https://gitee.com/yudaocode/yudao-ui-admin-vue3/issues/IAB1SX 讨论

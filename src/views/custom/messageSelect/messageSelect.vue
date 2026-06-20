@@ -24,7 +24,7 @@ import axios from 'axios'
                 const year = now.getFullYear();
                 const month = this.formatNum(now.getMonth() +1);
                 const day = this.formatNum(now.getDate());
-                const month2 = this.formatNum(now.getMonth());
+                let month2 = this.formatNum(now.getMonth());
                 if(month2 == '00'){
                     month2 = '12';
                 }

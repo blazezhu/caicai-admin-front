@@ -135,7 +135,7 @@ export default[
 {
     path: '/kids/dashboard/user',
     name: 'KidsUserDashboard',
-    component: () => import('@/views/kids/dashboard/UserDashboardPage.vue'),
+    component: () => import('@/views/kids/dashboard/UserDashboardRedirect.vue'),
     meta: {
         title: '用户大屏',
         roles: ['*']

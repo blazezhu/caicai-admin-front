@@ -1,0 +1,5 @@
+/dashboard.html
+  Cache-Control: public, max-age=3600
+
+/dashboard-app.js
+  Cache-Control: public, max-age=86400
