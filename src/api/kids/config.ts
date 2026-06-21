@@ -33,3 +33,23 @@ export const getReferralConfig = async () => {
 export const saveReferralConfig = async (data: KidsConfigSaveReqVO) => {
   return await request.put({ url: '/kids/admin/config/referral', data })
 }
+
+// 获取用户协议内容
+export const getTermsConfig = async () => {
+  return await request.get({ url: '/kids/admin/config/terms' })
+}
+
+// 保存用户协议内容
+export const saveTermsConfig = async (data: KidsConfigSaveReqVO) => {
+  return await request.put({ url: '/kids/admin/config/terms', data })
+}
+
+// 获取隐私政策内容
+export const getPrivacyConfig = async () => {
+  return await request.get({ url: '/kids/admin/config/privacy' })
+}
+
+// 保存隐私政策内容
+export const savePrivacyConfig = async (data: KidsConfigSaveReqVO) => {
+  return await request.put({ url: '/kids/admin/config/privacy', data })
+}
