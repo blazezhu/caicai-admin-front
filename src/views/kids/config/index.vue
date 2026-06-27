@@ -6,44 +6,51 @@
       label-width="150px"
       v-loading="formLoading"
     >
+      <!-- 运营模式配置 -->
       <el-card shadow="never">
         <template #header>
           <div class="card-header">
-            <span>广告功能配置</span>
+            <span>运营模式配置</span>
           </div>
         </template>
 
-        <el-form-item label="广告功能开关">
-          <el-switch
-            v-model="adEnabled"
-            active-text="开启广告"
-            inactive-text="免广告（关闭）"
-          />
+        <el-form-item label="运营模式">
+          <el-radio-group v-model="operationMode">
+            <el-radio value="internal_test">内测</el-radio>
+            <el-radio value="public_test">公测</el-radio>
+            <el-radio value="official">正式上线</el-radio>
+          </el-radio-group>
           <el-text class="w-full" size="small" type="info">
-            开启后向用户展示广告；关闭后所有用户都享受免广告体验
+            内测模式限制注册人数；公测和正式上线无限制
+          </el-text>
+        </el-form-item>
+
+        <el-form-item v-if="operationMode === 'internal_test'" label="最大注册人数">
+          <el-input-number v-model="internalTestLimit" :min="1" :max="99999" />
+          <el-text class="w-full" size="small" type="info">
+            超过此人数后新用户无法注册，已有用户不受影响
           </el-text>
         </el-form-item>
       </el-card>
 
-      <el-card shadow="never" class="mt-16px">
+      <!-- 邀请推广和广告配置（仅公测/正式上线显示） -->
+      <el-card v-if="operationMode !== 'internal_test'" shadow="never" class="mt-16px">
         <template #header>
           <div class="card-header">
-            <span>邀请推广配置</span>
+            <span>功能开关</span>
           </div>
         </template>
 
-        <el-form-item label="邀请功能开关">
-          <el-switch
-            v-model="referralEnabled"
-            active-text="开启邀请"
-            inactive-text="关闭邀请"
-          />
-          <el-text class="w-full" size="small" type="info">
-            开启后小程序"我的"页面显示"邀请好友"按钮；关闭后隐藏该按钮
-          </el-text>
+        <el-form-item label="邀请推广">
+          <el-switch v-model="referralEnabled" active-text="开启" inactive-text="关闭" />
+        </el-form-item>
+
+        <el-form-item label="广告功能">
+          <el-switch v-model="adEnabled" active-text="开启" inactive-text="关闭" />
         </el-form-item>
       </el-card>
 
+      <!-- 用户协议 -->
       <el-card shadow="never" class="mt-16px">
         <template #header>
           <div class="card-header">
@@ -53,15 +60,12 @@
 
         <el-form-item label="协议内容">
           <div class="editor-container">
-            <Editor
-              v-model="termsContent"
-              :editor-config="editorConfig"
-              style="height: 400px"
-            />
+            <Editor v-model="termsContent" :editor-config="editorConfig" style="height: 400px" />
           </div>
         </el-form-item>
       </el-card>
 
+      <!-- 隐私政策 -->
       <el-card shadow="never" class="mt-16px">
         <template #header>
           <div class="card-header">
@@ -71,11 +75,7 @@
 
         <el-form-item label="政策内容">
           <div class="editor-container">
-            <Editor
-              v-model="privacyContent"
-              :editor-config="editorConfig"
-              style="height: 400px"
-            />
+            <Editor v-model="privacyContent" :editor-config="editorConfig" style="height: 400px" />
           </div>
         </el-form-item>
       </el-card>
@@ -88,7 +88,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onBeforeUnmount, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as ConfigApi from '@/api/kids/config'
 import { Editor } from '@/components/Editor'
@@ -97,6 +97,8 @@ import { createEditorConfig } from '@/views/mp/draft/editor-config'
 defineOptions({ name: 'KidsConfig' })
 
 const formLoading = ref(false)
+const operationMode = ref('internal_test')
+const internalTestLimit = ref(90)
 const adEnabled = ref(true)
 const referralEnabled = ref(false)
 const termsContent = ref('')
@@ -109,16 +111,20 @@ const editorConfig = createEditorConfig()
 const loadAllConfig = async () => {
   formLoading.value = true
   try {
-    const [adData, referralData, termsData, privacyData] = await Promise.all([
+    const [adData, referralData, termsData, privacyData, systemData, limitData] = await Promise.all([
       ConfigApi.getAdConfig(),
       ConfigApi.getReferralConfig(),
       ConfigApi.getTermsConfig(),
       ConfigApi.getPrivacyConfig(),
+      ConfigApi.getSystemConfig(),
+      ConfigApi.getInternalTestLimit(),
     ])
     if (adData) adEnabled.value = adData.configValue === 'true'
     if (referralData) referralEnabled.value = referralData.configValue === 'true'
     if (termsData) termsContent.value = termsData.configValue || ''
     if (privacyData) privacyContent.value = privacyData.configValue || ''
+    if (systemData) operationMode.value = systemData.configValue || 'internal_test'
+    if (limitData) internalTestLimit.value = parseInt(limitData.configValue) || 90
   } finally {
     formLoading.value = false
   }
@@ -129,6 +135,8 @@ const onSubmit = async () => {
   formLoading.value = true
   try {
     await Promise.all([
+      ConfigApi.saveSystemConfig({ configKey: 'operation_mode', configValue: operationMode.value, valueType: 'string' }),
+      ConfigApi.saveSystemConfig({ configKey: 'internal_test_limit', configValue: String(internalTestLimit.value), valueType: 'number' }),
       ConfigApi.saveAdConfig({ configKey: 'ad_enabled', configValue: adEnabled.value ? 'true' : 'false', valueType: 'boolean' }),
       ConfigApi.saveReferralConfig({ configKey: 'referral_enabled', configValue: referralEnabled.value ? 'true' : 'false', valueType: 'boolean' }),
       ConfigApi.saveTermsConfig({ configKey: 'terms_of_service', configValue: termsContent.value, valueType: 'html' }),

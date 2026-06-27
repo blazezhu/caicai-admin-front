@@ -53,3 +53,18 @@ export const getPrivacyConfig = async () => {
 export const savePrivacyConfig = async (data: KidsConfigSaveReqVO) => {
   return await request.put({ url: '/kids/admin/config/privacy', data })
 }
+
+// 获取运营模式配置
+export const getSystemConfig = async () => {
+  return await request.get({ url: '/kids/admin/config/system' })
+}
+
+// 获取内测人数上限
+export const getInternalTestLimit = async () => {
+  return await request.get({ url: '/kids/admin/config/system/limit' })
+}
+
+// 保存运营模式配置
+export const saveSystemConfig = async (data: KidsConfigSaveReqVO) => {
+  return await request.put({ url: '/kids/admin/config/system', data })
+}
